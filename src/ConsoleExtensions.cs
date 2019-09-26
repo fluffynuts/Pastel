@@ -113,15 +113,6 @@
 
         static ConsoleExtensions()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var iStdOut =   GetStdHandle(STD_OUTPUT_HANDLE);
-
-                var enable  =   GetConsoleMode(iStdOut, out var outConsoleMode)
-                             && SetConsoleMode(iStdOut, outConsoleMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-            }
-
-
             if (Environment.GetEnvironmentVariable("NO_COLOR") == null)
             {
                 Enable();
