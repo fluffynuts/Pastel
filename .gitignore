@@ -5,3 +5,5 @@ _ReSharper.*
 bin
 obj
 packages
+.idea
+src/Pastel.xml
