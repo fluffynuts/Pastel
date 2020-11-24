@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Drawing;
     using System.Globalization;
     using System.Linq;
@@ -9,6 +10,9 @@
     using System.Text.RegularExpressions;
 
 
+    /// <summary>
+    /// Controls colored console output by <see langword="Pastel"/>.
+    /// </summary>
     public static class ConsoleExtensions
     {
         private const int  STD_OUTPUT_HANDLE                     = -11;
@@ -22,9 +26,6 @@
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr GetStdHandle(int nStdHandle);
-
-        [DllImport("kernel32.dll")]
-        public static extern uint GetLastError();
 
 
         private static bool _enabled;
@@ -45,23 +46,22 @@
         private static readonly string _formatStringFull    = $"{_formatStringStart}{_formatStringColor}{_formatStringContent}{_formatStringEnd}";
 
 
-        private static readonly Dictionary<ColorPlane, string> _planeFormatModifiers = new Dictionary<ColorPlane, string>
+        private static readonly ReadOnlyDictionary<ColorPlane, string> _planeFormatModifiers = new ReadOnlyDictionary<ColorPlane, string>(new Dictionary<ColorPlane, string>
         {
             [ColorPlane.Foreground] = "38",
             [ColorPlane.Background] = "48"
-        };
+        });
 
 
 
-        private static readonly Regex  _closeNestedPastelStringRegex1 = new Regex($"({_formatStringEnd.Replace("[", @"\[")})+");
-        private static readonly Regex  _closeNestedPastelStringRegex2 = new Regex($"(?<!^)(?<!{_formatStringEnd.Replace("[", @"\[")})(?<!{string.Format($"{_formatStringStart.Replace("[", @"\[")}{_formatStringColor}", new[] { $"(?:{_planeFormatModifiers[ColorPlane.Foreground]}|{_planeFormatModifiers[ColorPlane.Background]})" }.Concat(Enumerable.Repeat(@"\d{1,3}", 3)).Cast<object>().ToArray())})({string.Format(_formatStringStart.Replace("[", @"\["), $"(?:{_planeFormatModifiers[ColorPlane.Foreground]}|{_planeFormatModifiers[ColorPlane.Background]})")})");
+        private static readonly Regex  _closeNestedPastelStringRegex1 = new Regex($"({_formatStringEnd.Replace("[", @"\[")})+", RegexOptions.Compiled);
+        private static readonly Regex  _closeNestedPastelStringRegex2 = new Regex($"(?<!^)(?<!{_formatStringEnd.Replace("[", @"\[")})(?<!{string.Format($"{_formatStringStart.Replace("[", @"\[")}{_formatStringColor}", new[] { $"(?:{_planeFormatModifiers[ColorPlane.Foreground]}|{_planeFormatModifiers[ColorPlane.Background]})" }.Concat(Enumerable.Repeat(@"\d{1,3}", 3)).Cast<object>().ToArray())})(?:{string.Format(_formatStringStart.Replace("[", @"\["), $"(?:{_planeFormatModifiers[ColorPlane.Foreground]}|{_planeFormatModifiers[ColorPlane.Background]})")})", RegexOptions.Compiled);
 
-        private static readonly Dictionary<ColorPlane, Regex> _closeNestedPastelStringRegex3 = new Dictionary<ColorPlane, Regex>
+        private static readonly ReadOnlyDictionary<ColorPlane, Regex> _closeNestedPastelStringRegex3 = new ReadOnlyDictionary<ColorPlane, Regex>(new Dictionary<ColorPlane, Regex>
         {
-            [ColorPlane.Foreground] = new Regex($"({_formatStringEnd.Replace("[", @"\[")})(?!{string.Format(_formatStringStart.Replace("[", @"\["), _planeFormatModifiers[ColorPlane.Foreground])})(?!$)"),
-            [ColorPlane.Background] = new Regex($"({_formatStringEnd.Replace("[", @"\[")})(?!{string.Format(_formatStringStart.Replace("[", @"\["), _planeFormatModifiers[ColorPlane.Background])})(?!$)")
-        };
-
+            [ColorPlane.Foreground] = new Regex($"(?:{_formatStringEnd.Replace("[", @"\[")})(?!{string.Format(_formatStringStart.Replace("[", @"\["), _planeFormatModifiers[ColorPlane.Foreground])})(?!$)", RegexOptions.Compiled),
+            [ColorPlane.Background] = new Regex($"(?:{_formatStringEnd.Replace("[", @"\[")})(?!{string.Format(_formatStringStart.Replace("[", @"\["), _planeFormatModifiers[ColorPlane.Background])})(?!$)", RegexOptions.Compiled)
+        });
 
 
 
@@ -81,32 +81,32 @@
 
 
 
-        private static readonly Dictionary<bool, Dictionary<ColorPlane, ColorFormat>>       _colorFormatFuncs = new Dictionary<bool, Dictionary<ColorPlane, ColorFormat>>
+        private static readonly ReadOnlyDictionary<bool, ReadOnlyDictionary<ColorPlane, ColorFormat>>       _colorFormatFuncs = new ReadOnlyDictionary<bool, ReadOnlyDictionary<ColorPlane, ColorFormat>>(new Dictionary<bool, ReadOnlyDictionary<ColorPlane, ColorFormat>>
         {
-            [false] = new Dictionary<ColorPlane, ColorFormat>
+            [false] = new ReadOnlyDictionary<ColorPlane, ColorFormat>(new Dictionary<ColorPlane, ColorFormat>
             {
                 [ColorPlane.Foreground] = _noColorOutputFormat,
                 [ColorPlane.Background] = _noColorOutputFormat
-            },
-            [true]  = new Dictionary<ColorPlane, ColorFormat>
+            }),
+            [true]  = new ReadOnlyDictionary<ColorPlane, ColorFormat>(new Dictionary<ColorPlane, ColorFormat>
             {
                 [ColorPlane.Foreground] = _foregroundColorFormat,
                 [ColorPlane.Background] = _backgroundColorFormat
-            }
-        };
-        private static readonly Dictionary<bool, Dictionary<ColorPlane, HexColorFormat>> _hexColorFormatFuncs = new Dictionary<bool, Dictionary<ColorPlane, HexColorFormat>>
+            })
+        });
+        private static readonly ReadOnlyDictionary<bool, ReadOnlyDictionary<ColorPlane, HexColorFormat>> _hexColorFormatFuncs = new ReadOnlyDictionary<bool, ReadOnlyDictionary<ColorPlane, HexColorFormat>>(new Dictionary<bool, ReadOnlyDictionary<ColorPlane, HexColorFormat>>
         {
-            [false] = new Dictionary<ColorPlane, HexColorFormat>
+            [false] = new ReadOnlyDictionary<ColorPlane, HexColorFormat>(new Dictionary<ColorPlane, HexColorFormat>
             {
                 [ColorPlane.Foreground] = _noHexColorOutputFormat,
                 [ColorPlane.Background] = _noHexColorOutputFormat
-            },
-            [true]  = new Dictionary<ColorPlane, HexColorFormat>
+            }),
+            [true]  = new ReadOnlyDictionary<ColorPlane, HexColorFormat>(new Dictionary<ColorPlane, HexColorFormat>
             {
                 [ColorPlane.Foreground] = _foregroundHexColorFormat,
                 [ColorPlane.Background] = _backgroundHexColorFormat
-            }
-        };
+            })
+        });
 
         
 
@@ -194,8 +194,8 @@
         {
             var closedString = _closeNestedPastelStringRegex1.Replace(input, _formatStringEnd);
 
-                closedString = _closeNestedPastelStringRegex2.Replace(closedString, $"{_formatStringEnd}$1");
-                closedString = _closeNestedPastelStringRegex3[colorPlane].Replace(closedString, $"$1{string.Format($"{_formatStringStart}{_formatStringColor}", _planeFormatModifiers[colorPlane], color.R, color.G, color.B)}");
+                closedString = _closeNestedPastelStringRegex2.Replace(closedString, $"{_formatStringEnd}$0");
+                closedString = _closeNestedPastelStringRegex3[colorPlane].Replace(closedString, $"$0{string.Format($"{_formatStringStart}{_formatStringColor}", _planeFormatModifiers[colorPlane], color.R, color.G, color.B)}");
 
             return closedString;
         }
