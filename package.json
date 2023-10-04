@@ -1,0 +1,23 @@
+{
+  "name": "pastel",
+  "version": "1.0.0",
+  "description": "![logo](https://raw.githubusercontent.com/silkfire/Pastel/master/img/logo.png)",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fluffynuts/Pastel.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fluffynuts/Pastel/issues"
+  },
+  "homepage": "https://github.com/fluffynuts/Pastel#readme"
+}
